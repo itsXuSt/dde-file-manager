@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+#include "core/cryptsetup.h"
 #include "crypttabhelper.h"
 #include "blockdevhelper.h"
 #include "inhibithelper.h"
@@ -60,7 +61,13 @@ bool crypttab_helper::updateCryptTab()
             newItems.append(item);
             continue;
         }
-        if (devptr->isEncrypted()) {
+
+        QString detachHeaderName;
+        crypt_setup_helper::genDetachHeaderPath(devptr->device(), &detachHeaderName);
+
+        // has header or detached header, treat as encrypted device.
+        if (devptr->isEncrypted() ||
+            (!detachHeaderName.isEmpty() && QFile(detachHeaderName).exists())) {
             newItems.append(item);
             continue;
         }

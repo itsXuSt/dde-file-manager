@@ -557,7 +557,7 @@ int crypt_setup::csDecrypt(const QString &dev, const QString &passphrase, const 
     }
 
     auto shift = crypt_get_data_offset(cdev);
-    struct crypt_params_reencrypt encArgs
+    struct crypt_params_reencrypt
     {
         .mode = CRYPT_REENCRYPT_DECRYPT,
         .direction = CRYPT_REENCRYPT_FORWARD,
@@ -567,7 +567,7 @@ int crypt_setup::csDecrypt(const QString &dev, const QString &passphrase, const 
         .max_hotzone_size = 0,
         .device_size = 0,
         .flags = CRYPT_REENCRYPT_MOVE_FIRST_SEGMENT
-    };
+    } encArgs;
 
     auto name = activeName.toStdString();
     r = crypt_reencrypt_init_by_passphrase(cdev,
