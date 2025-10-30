@@ -271,6 +271,8 @@ DiskEncryptSetupPrivate::DiskEncryptSetupPrivate(DiskEncryptSetup *parent)
     } else {
         qInfo() << "[DiskEncryptSetupPrivate] DConfig initialized successfully";
     }
+
+    qptr->lockTimer(true);
 }
 
 void DiskEncryptSetupPrivate::initialize()
@@ -504,15 +506,15 @@ void DiskEncryptSetupPrivate::onPassphraseChanged()
 void DiskEncryptSetupPrivate::onLongTimeJobStarted()
 {
     jobRunning = true;
-    qptr->lockTimer(true);
-    qInfo() << "auto quit timer is locked.";
+    // qptr->lockTimer(true);
+    // qInfo() << "auto quit timer is locked.";
 }
 
 void DiskEncryptSetupPrivate::onLongTimeJobStopped()
 {
     jobRunning = false;
-    qptr->lockTimer(false);
-    qInfo() << "auto quite timer is unlocked";
+    // qptr->lockTimer(false);
+    // qInfo() << "auto quite timer is unlocked";
 }
 
 void DiskEncryptSetupPrivate::onConfigValueChanged(const QString &key)
@@ -668,9 +670,10 @@ bool DiskEncryptSetupPrivate::removeOverlayDMFlagFile()
 
 bool DiskEncryptSetupPrivate::updateInitramfs()
 {
-    static constexpr char kUpdateInitramfsCmd[] { "/usr/sbin/update-initramfs" };
+    static constexpr char kSudoCmd[] { "/usr/bin/sudo" };
+    static constexpr char kUpdateInitramfsCmd[] { "/sbin/update-initramfs" };
 
-    qInfo() << "[DiskEncryptSetupPrivate::updateInitramfs] Executing update-initramfs command";
+    qInfo() << "[DiskEncryptSetupPrivate::updateInitramfs] Executing update-initramfs command via sudo -E";
 
     // Create inhibit lock to prevent shutdown/sleep during update-initramfs
     QString inhibitMessage = "Updating initramfs, please do not shutdown or suspend the system";
@@ -689,7 +692,7 @@ bool DiskEncryptSetupPrivate::updateInitramfs()
     }
 
     QProcess process;
-    process.start(kUpdateInitramfsCmd, QStringList() << "-u");
+    process.start(kSudoCmd, QStringList() << "-E" << kUpdateInitramfsCmd << "-u");
 
     if (!process.waitForStarted()) {
         QString errorMsg = process.errorString();
